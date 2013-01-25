@@ -18,7 +18,7 @@ select xt.install_js('XT','Session','xtuple', $$
             + 'lang_abbr2 AS "language", '
             + 'country_abbr AS "country" '
             + 'from locale '
-            + 'join usr on usr_locale_id = locale_id '
+            + 'join xt.usr on usr_locale_id = locale_id '
             + 'left join lang on locale_lang_id = lang_id '
             + 'left join country on locale_country_id = country_id '
             + 'where usr_username = $1 ', 
@@ -26,8 +26,14 @@ select xt.install_js('XT','Session','xtuple', $$
 
     /* determine culture */
     var culture = 'en';
-    if (rec.language && rec.country) culture = rec.language+'-'+rec.country;
-    else if (rec.language) culture = rec.language;
+    if (!rec) {
+      /* no result. The user probably does not exist */
+      throw "No result for locale. Username probably does not exist in the instance database";
+    } else if (rec.language && rec.country) {
+      culture = rec.language + '-' + rec.country;
+    } else if (rec.language) {
+      culture = rec.language;
+    }
     rec.culture = culture;
 
     return JSON.stringify(rec);
